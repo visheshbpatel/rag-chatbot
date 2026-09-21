@@ -10,5 +10,6 @@ dependencies = [
     "langchain-text-splitters>=1.1.2",
     "langchain[openai]>=1.4.2",
     "numpy>=2.5.3",
+    "pypdf>=6.19.0",
     "requests>=2.34.2",
 ]
