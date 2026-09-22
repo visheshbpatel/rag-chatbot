@@ -7,14 +7,13 @@ backend = StateBackend()
 
 @tool(parse_docstring=True)
 def search_documentation(query: str) -> str:
-    """
-    Search LangChain documentation and save matching chunks to the agent filesystem
+    """Search LangChain documentation and save matching chunks to the agent filesystem.
 
-    args:
-        query: Natural Language search query.
+    Args:
+        query: Natural language search query.
 
     Returns:
-        File Paths where retreived chunks were saved under /retrieved/.
+        File paths where retrieved chunks were saved under /retrieved/.
     """
 
     retreived_docs = vector_store.similarity_search(query, k=4)
