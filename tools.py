@@ -1,37 +1,53 @@
+# tools.py
+
 import uuid
+
 from deepagents.backends import StateBackend
 from langchain.tools import tool
-from indexing import vector_store
 
-backend = StateBackend()
 
-@tool(parse_docstring=True)
-def search_documentation(query: str) -> str:
-    """Search LangChain documentation and save matching chunks to the agent filesystem.
+def create_search_tool(vector_store, backend, chunk_count: int):
 
-    Args:
-        query: Natural language search query.
+    @tool(parse_docstring=True)
+    def search_documentation(query: str) -> str:
+        """Search uploaded documents and save matching chunks.
 
-    Returns:
-        File paths where retrieved chunks were saved under /retrieved/.
-    """
+        Args:
+            query: Natural-language search query.
 
-    retreived_docs = vector_store.similarity_search(query, k=4)
-    batch_id = uuid.uuid4().hex[:8]
-    uploads: list[tuple[str,bytes]] = []
-    saved_paths: list[str] = []
+        Returns:
+            File paths containing retrieved document chunks.
+        """
 
-    for index, doc in enumerate(retreived_docs, start=1):
-        path = f"/retrieved/{batch_id}/chunk_{index}.md"
-        content=(
-            f"# Source: {doc.metadata.get('source', 'unknown')}\n\n"
-            f"{doc.page_content}"
+        retrieved_docs = vector_store.similarity_search(
+            query,
+            k=min(4, chunk_count),
         )
-        uploads.append((path, content.encode("utf-8")))
-        saved_paths.append(path)
 
-    backend.upload_files(uploads)
-    return(
-        f"saved{len(saved_paths)} documentation chunks: \n"
-        + "\n".join(saved_paths)
-    )
+        batch_id = uuid.uuid4().hex[:8]
+
+        uploads: list[tuple[str, bytes]] = []
+        saved_paths: list[str] = []
+
+        for index, doc in enumerate(retrieved_docs, start=1):
+            path = f"/retrieved/{batch_id}/chunk_{index}.md"
+
+            content = (
+                f"# Source: {doc.metadata.get('source', 'unknown')}\n\n"
+                f"{doc.page_content}"
+            )
+
+            uploads.append(
+                (path, content.encode("utf-8"))
+            )
+
+            saved_paths.append(path)
+
+        backend.upload_files(uploads)
+
+        return (
+            f"Saved {len(saved_paths)} document chunks:\n"
+            + "\n".join(saved_paths)
+        )
+
+    return search_documentation
