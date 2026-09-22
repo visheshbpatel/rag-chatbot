@@ -30,9 +30,3 @@ def read_multiple_pdfs(pdf_paths: List[str|Path]) -> List[Document]:
 
     return docs
 
-DOC_PATHS = [
-    "data/pdf/climate_change.pdf",
-    "data/pdf/global_warming.pdf"
-]
-
-print(read_multiple_pdfs(DOC_PATHS))
